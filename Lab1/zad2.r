@@ -21,7 +21,7 @@ osoby2 <- osoby
 osoby2$wyplata <- c(round((runif(nrow(osoby2),2000,5000)),2))
 print(osoby2)
 #h)
-newRow <- data.frame(nazwisko="Kowalski",imie="Jan",wiek='30',wyplata='3000') 
+newRow <- data.frame(nazwisko="Kowalski",imie="Jan",plec= "m",wiek='30',wyplata='3000') 
 osoby3 <- rbind(osoby2, newRow)
 print(osoby3)
 #i) 
