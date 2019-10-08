@@ -18,7 +18,7 @@ print(mean)
 #g)
 osoby2 <- osoby
 #cbind(osoby, wyplata=c(runif(20,0,50)))
-osoby2$wyplata <- c(round((runif(nrow(osoby2),2000,5000),2))
+osoby2$wyplata <- c(round((runif(nrow(osoby2),2000,5000)),2))
 print(osoby2)
 #h)
 newRow <- data.frame(nazwisko="Kowalski",imie="Jan",wiek='30',wyplata='3000') 
