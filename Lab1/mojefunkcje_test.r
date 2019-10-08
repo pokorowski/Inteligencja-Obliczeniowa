@@ -1,0 +1,8 @@
+sumuj(12,30)
+d31 <- c(7,4,2,0,9)
+d32 <- c(2,1,5,3,3)
+sumuj(d31,d32)
+losuj(1,10)
+standaryzuj(d31)
+normalizuj(d31)
+wyszukaj(d31,0)
