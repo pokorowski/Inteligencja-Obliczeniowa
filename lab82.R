@@ -1,9 +1,16 @@
 library(neuralnet)
 library(plyr)
+
 iris <- read.csv("iris.csv")
+
 normalize <- function(x) {
   (x-min(x))/(max(x)-min(x))
 }
+
+accuracy <- function(x){
+  sum(diag(x)/(sum(rowSums(x)))) * 100
+}
+
 iris$sepal.length <- normalize(iris$sepal.length)
 iris$sepal.width <- normalize(iris$sepal.width)
 iris$petal.length<- normalize(iris$petal.length)
@@ -36,5 +43,6 @@ prediction [,1] <- round(prediction[,1])
 prediction [,2] <- round(prediction[,2])
 prediction [,3] <- round(prediction[,3])
 
-results <- data.frame(actual,prediction)
-table(actual,prediction)
+confusionMatrix <- table(actual,prediction)
+accuracy(confusionMatrix)
+confusionMatrix
