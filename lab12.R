@@ -1,4 +1,5 @@
 library(tm)
+library(slam)
 library(ggplot2) 
 cname <- file.path("/home/LABPK/pokorowski", "articles")   
 docs <- VCorpus(DirSource(cname))   
@@ -38,5 +39,10 @@ p <- ggplot(subset(wf, freq>20), aes(x = reorder(word, -freq), y = freq)) +
   theme(axis.text.x=element_text(angle=45, hjust=1))
 p  
 
+tdm <- TermDocumentMatrix(docs,control = list(removePunctuation = TRUE,stopwords = TRUE))
+cosine_dist_mat <- crossprod_simple_triplet_matrix(tdm)/(sqrt(col_sums(tdm^2) %*% t(col_sums(tdm^2))))
 
+colnames(cosine_dist_mat ) <- c("computer.txt","language.txt","life.txt","natural-computing.txt","natural-computing.txt","programming-language.txt")
+rownames(cosine_dist_mat ) <- c("computer.txt","language.txt","life.txt","natural-computing.txt","natural-computing.txt","programming-language.txt")
+cosine_dist_mat
 
