@@ -57,9 +57,50 @@ str(DictionaryHE)
 dict.HE <- loadDictionaryHE()
 # Print summary statistics of dictionary
 summary(dict.HE)
-## Dictionary type:  binary (positive / negative)
-## Total entries:    97
-## Positive entries: 53 (54.64%)
-## Negative entries: 44 (45.36%)
 data(DictionaryLM)
 str(DictionaryLM)
+
+
+#Dictionary generation-----------------------------------------------------------------------------
+
+# Create a vector of strings
+documents <- c("This is a good thing!",
+               "This is a very good thing!",
+               "This is okay.",
+               "This is a bad thing.",
+               "This is a very bad thing.")
+response <- c(1, 0.5, 0, -0.5, -1)
+
+# Generate dictionary with LASSO regularization
+dict <- generateDictionary(documents, response)
+dict
+summary(dict)
+write(dict, file="dictionary.dict")
+dict <- read("dictionary.dict")
+
+
+
+#Performance evaluation------------------------------------------
+
+compareDictionaries(dict,
+                    loadDictionaryQDAP())
+
+sentiment <- predict(dict, documents)
+compareToResponse(sentiment, response)
+
+
+test_documents <- c("This is neither good nor bad",
+                    "What a good idea!",
+                    "Not bad")
+test_response <- c(0, 1, 1)
+
+pred <- predict(dict, test_documents)
+
+compareToResponse(pred, test_response)
+
+plotSentimentResponse(pred, test_response)
+
+compareToResponse(analyzeSentiment(test_documents), test_response)
+
+
+
