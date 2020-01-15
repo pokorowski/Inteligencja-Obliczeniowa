@@ -5,7 +5,7 @@ library(party)
 library(class)
 library(ggplot2)
 library(dplyr)
-
+library(neuralnet)
 
 #ustaw folder roboczy
 setwd("E:/InteligencjaObliczeniowaProjekt")
@@ -14,7 +14,7 @@ adult <- read.csv(file="adult.csv", header=TRUE, sep=",",strip.white = T)
 #-----------------------------------------------------------------
 #Czyszczenie, preprocessing danych
 
-
+adult<-adult[,-3]
 
 adult %>%
   summarise(
@@ -52,8 +52,8 @@ adult$workclass <- gsub('^Never-worked', 'Other/Unknown', adult$workclass)
 adult$workclass <- gsub('^Without-pay', 'Other/Unknown', adult$workclass)
 
 #
-adult$income <- gsub('^<=50K', 'Small', adult$income)
-adult$income <- gsub('^>50K', 'Big', adult$income)
+adult$income <- gsub('^<=50K', 'low', adult$income)
+adult$income <- gsub('^>50K', 'high', adult$income)
 
 adult$workclass <- as.factor(adult$workclass)
 adult$occupation <- as.factor(adult$occupation)
@@ -62,8 +62,24 @@ adult$income <- as.factor(adult$income)
 -----------------------------------------------------------------------------------------------------------------------
 #Proste dane statystyczne np. srednia, odchylenie, min, max dla kazdej z kolumn
 
+incomeFreq <- adult %>% count(income)
+incomeFreq 
+lowIncFreq <-as.numeric(incomeFreq[2,2])
+highIncFreq <-as.numeric(incomeFreq[1,2])
+
+generatePieChart <-function(freq,pieLabels,title) { 
+  lbls <- pieLabels
+  pct <- round(freq/sum(freq)*100)
+  lbls <- paste(lbls, pct) # add percents to labels
+  lbls <- paste(lbls,"%",sep="") # ad % to labels
+  pie(incGroupNumber,labels = lbls, col=rainbow(length(lbls)),
+      main="Representing groups by income")
+}
+
+generatePieChart(c(lowIncFreq,highIncFreq),c("low","high"),"Representing groups by income")
+
 #wektor zawierajacy indeksy kolumn zawierajacych dane liczbowe
-numColumnsIndices <- c(1,3,5,11,12,13)
+numColumnsIndices <- c(1,4,10,11,12)
 
 #nazwy kolumn zawierajacych dane liczbowe
 nunColumnsHeaders <- colnames(adult)[numColumnsIndices]
@@ -120,7 +136,7 @@ write.csv(functionsComparisonMatrix,"ProbMatrix.csv")
 #---------------------------------------------------------------------------------------------------------------
 #Klasyfikacja
 adultNum <- adult
-stringColumnsIndices <- c(2,4,6,7,8,9,10,14)
+stringColumnsIndices <- c(2,3,5,6,7,8,9,13)
 
 stringDataToNumeric<-function(csvData){
  
@@ -139,15 +155,15 @@ ran <- sample(1:nrow(adult), 0.7 * nrow(adult))
 nor <-function(x) { (x -min(x))/(max(x)-min(x))   }
 
 ##przeprowadz normalizacje dla kolumn numerycznych
-adult_norm <- as.data.frame(lapply(adultNum[,1:14], nor))
+adult_norm <- as.data.frame(lapply(adultNum[,1:13], nor))
 #Ekstracja zbioru treningowego
 adult_train <- adult_norm[ran,] 
 #Ekstracja zbioru testowego
 adult_test <- adult_norm[-ran,] 
 #Ekstracja ostatniej kolumny zbioru treningowego
-adult_train_category <- adultNum[ran,15]
+adult_train_category <- adultNum[ran,14]
 #Ekstracja ostatniej kolumny zbioru treningowego
-adult_test_category <- adultNum[-ran,15]
+adult_test_category <- adultNum[-ran,14]
 
 
 pr3 <- knn(adult_train,adult_test,cl=adult_train_category,k=3)
@@ -207,7 +223,7 @@ adultGroup<- stringDataToNumeric(adultGroup)
 
 
 ##przeprowadz normalizacje dla kolumn numerycznych
-adultGroup_norm <- as.data.frame(lapply(adultGroup[,1:14], nor))
+adultGroup_norm <- as.data.frame(lapply(adultGroup[,1:13], nor))
 ##przypisz zmiennej wartosci kolumny income
 adultGroup_head <- adultGroup[,"income"]
 adultGroupNum_head <- as.numeric(adultGroup_head)
@@ -225,7 +241,7 @@ MLmetrics::Accuracy(groupResultDbs$cluster,adultGroupNum_head)
 
 library(arules)
 
-stringColumnsRuleIndices <- c(2,4,6,7,8,9,10,14,15)
+stringColumnsRuleIndices <- c(2,3,5,6,7,8,9,13,14)
 
 rulesAdult <- adult
 
@@ -243,8 +259,8 @@ summary(rulesAdult$hours.per.week)
 
  
 rules <- apriori(adult[,stringColumnsRuleIndices],
-                 parameter = list(minlen=2, supp=0.1, conf=0.9),
-                 appearance = list(rhs=c("income=Small", "income=Big"),
+                 parameter = list(minlen=2, supp=0.03, conf=0.70),
+                 appearance = list(rhs=c("income=low", "income=high"),
                                    default="lhs"),
                  control = list(verbose=F))
 
@@ -258,4 +274,4 @@ which(redundant)
 rules.pruned <- rules.sorted[!redundant]
 inspect(rules.pruned)
 
-
+inspect(subset(rules.sorted, subset = rhs %in% "income=high"))
